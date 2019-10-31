@@ -60,11 +60,11 @@ private func escapeTerminalString(_ value: String) -> String {
     return value.replacingOccurrences(of: "\"", with: "\\\"", options:[], range: nil)
 }
 
-fileprivate func convertURLRequestToCurlCommand(_ request: URLRequest) -> String {
+private func convertURLRequestToCurlCommand(_ request: URLRequest) -> String {
     let method = request.httpMethod ?? "GET"
     var returnValue = "curl -X \(method) "
 
-    if let httpBody = request.httpBody, request.httpMethod == "POST" {
+    if let httpBody = request.httpBody, request.httpMethod == "POST" || request.httpMethod == "PUT" {
         let maybeBody = String(data: httpBody, encoding: String.Encoding.utf8)
         if let body = maybeBody {
             returnValue += "-d \"\(escapeTerminalString(body))\" "
@@ -140,7 +140,7 @@ extension Reactive where Base: URLSession {
                     let interval = Date().timeIntervalSince(d ?? Date())
                     print(convertURLRequestToCurlCommand(request))
                     #if os(Linux)
-                        print(convertResponseToString(response, error.flatMap { $0 as? NSError }, interval))
+                        print(convertResponseToString(response, error.flatMap { $0 as NSError }, interval))
                     #else
                         print(convertResponseToString(response, error.map { $0 as NSError }, interval))
                     #endif
